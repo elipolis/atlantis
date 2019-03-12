@@ -43,4 +43,10 @@ if [[ $(id -u) == 0 ]] && [[ "$1" = 'atlantis' ]]; then
     set -- gosu atlantis "$@"
 fi
 
+CRED=$(aws ssm get-parameters --with-decryption --name ${ID_RSA_PARAMETER_STORE} | jq -r '.Parameters[0].Value')
+
+export CRED=$CRED
+
+/usr/local/bin/provisioning_key.sh
+
 exec "$@"

@@ -4,6 +4,10 @@ LABEL authors="Anubhav Mishra, Luke Kysow"
 
 # install terraform binaries
 ENV DEFAULT_TERRAFORM_VERSION=0.11.11
+ENV ATLANTIS_VERSION="v0.4.15"
+ENV ID_RSA_PARAMETER_STORE="/config/atlantis/id-rsa"
+RUN apk add aws-cli --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+RUN apk update && apk add openssh jq
 
 # In the official Atlantis image we only have the latest of each Terrafrom version.
 RUN AVAILABLE_TERRAFORM_VERSIONS="0.8.8 0.9.11 0.10.8 ${DEFAULT_TERRAFORM_VERSION}" && \
@@ -17,11 +21,11 @@ RUN AVAILABLE_TERRAFORM_VERSIONS="0.8.8 0.9.11 0.10.8 ${DEFAULT_TERRAFORM_VERSIO
         rm terraform_${VERSION}_linux_amd64.zip && \
         rm terraform_${VERSION}_SHA256SUMS; \
     done && \
+    curl -LOks https://github.com/runatlantis/atlantis/releases/download/${ATLANTIS_VERSION}/atlantis_linux_amd64.zip && \
+    unzip atlantis_linux_amd64.zip -d /usr/local/bin/ && \
     ln -s /usr/local/bin/tf/versions/${DEFAULT_TERRAFORM_VERSION}/terraform /usr/local/bin/terraform
 
-# copy binary
-COPY atlantis /usr/local/bin/atlantis
-
+COPY ssh-requirements/provisioning_key.sh /usr/local/bin/provisioning_key.sh
 # copy docker entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
